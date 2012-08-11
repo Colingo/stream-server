@@ -8,16 +8,22 @@ module.exports = createRouter
 
 function createRouter(prefix) {
     var router = StreamRouter()
-    router.addRoute(prefix + "/server/:serverName/client/:clientName*"
+    router.addRoute(prefix + "/server/:serverName/client/:clientName"
         , redirectServerToClient)
-    router.addRoute(prefix + "/server/:serverName*", handleServer)
-    router.addRoute(prefix + "/client/:serverName*", handleClient)
+    router.addRoute(prefix + "/server/:serverName", handleServer)
+    router.addRoute(prefix + "/client/:serverName/*", handleClient)
     return router
 }
 
 function handleServer(stream, params) {
     var serverName = params.serverName
         , store = stores[serverName]
+
+    console.log("[HANDLE-SERVER]", {
+        serverName: serverName
+        , params: params
+        , store: Object.keys(stores)
+    })
 
     if (store) {
         // someone already registered this server. This is invalid state
@@ -78,6 +84,13 @@ function redirectServerToClient(stream, params) {
     var serverName = params.serverName
         , clientName = params.clientName
         , server = stores[serverName]
+
+    console.log("[REDIRECT-TO-CLIENT]", {
+        server: server
+        , serverName: serverName
+        , params: params
+        , store: Object.keys(stores)
+    })
 
     if (!server) {
         // trying to connect to a stream when a server is not registered
