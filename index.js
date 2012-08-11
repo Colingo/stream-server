@@ -85,13 +85,6 @@ function redirectServerToClient(stream, params) {
         , clientName = params.clientName
         , server = stores[serverName]
 
-    console.log("[REDIRECT-TO-CLIENT]", {
-        server: server
-        , serverName: serverName
-        , params: params
-        , store: Object.keys(stores)
-    })
-
     if (!server) {
         // trying to connect to a stream when a server is not registered
         return stream.end()

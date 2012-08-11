@@ -17,15 +17,19 @@ function createServer(mdm, options, callback) {
     }
 
     function connect(name) {
+        // connect to a client directly
         return mdm.createStream(prefix + "/client/" + name + "/" + uuid())
     }
     
     function listen(name) {
+        // open a server stream
         var stream = mdm.createStream(prefix + "/server/" + name)
 
         stream.on("data", openServerConnection)
 
         function openServerConnection(clientName) {
+            // for each client message that comes up open the client stream
+            // and return it into the callback
             var clientStream = mdm.createStream(prefix + "/server/" + name +
                 "/client/" + clientName)
 
