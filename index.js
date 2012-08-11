@@ -3,21 +3,36 @@ var partial = require("ap").partial
     , handleServer = require("./lib/handleServer")
     , handleClient = require("./lib/handleClient")
     , redirectServerToClient = require("./lib/redirectServerToClient")
+    , EventEmitter = require("events").EventEmitter.prototype
+    , extend = require("xtend")
+    , through = require("through")
 
-module.exports = createRouter
+module.exports = StreamServerProxy
 
-function createRouter(prefix) {
-    var router = StreamRouter()
+function StreamServerProxy(prefix) {
+    var proxy = StreamRouter()
         , stores = {}
+
+    extend(proxy, EventEmitter)
 
     prefix = prefix || "/browser-server"
 
-    router.addRoute(prefix + "/server/:serverName/client/:clientName"
+    proxy.addRoute(prefix + "/server/:serverName/client/:clientName"
         , partial(redirectServerToClient, stores))
-    router.addRoute(prefix + "/server/:serverName"
-        , partial(handleServer, stores))
-    router.addRoute(prefix + "/client/:serverName/*"
+    proxy.addRoute(prefix + "/server/:serverName"
+        , partial(handleServer, stores, proxy))
+    proxy.addRoute(prefix + "/client/:serverName/*"
         , partial(handleClient, stores))
 
-    return router
+    proxy.connect = connect
+
+    return proxy
+
+    function connect(serverName) {
+        var stream = through()
+        handleClient(stores, stream, {
+            serverName: serverName
+        })
+        return stream
+    }
 }

@@ -104,14 +104,36 @@ To be used in the server
 
 ``` js
 var StreamServerProxy = require("browser-stream-server")
+    , proxy = StreamServerProxy("/somePrefix")
 // for every request to /browser-server let the StreamServer proxy handle it
-streamRouter.addRoute("/somePrefix/*"
-    , StreamServerProxy("/somePrefix"))
+streamRouter.addRoute("/somePrefix/*", proxy)
 ```
 
 Set up a steam route handler to allow the stream servers and clients to be proxied through your central server.
 
 Optionally pass in a prefix which defaults to `"/browser-server"`. If you pass in a different prefix make sure that your browser code matches the prefix.
+
+#### proxy events
+
+The returned proxy object emits `server-created` and `server-destroyed` events when a server stream connects and claims to own the SERVER_NAME
+
+``` js
+proxy.on("server-created", function (serverName) {
+    createSomeSpecialResources(serverName)
+})
+
+proxy.on("server-destroyed", function (serverName) {
+    destroySpecialResources(serverName)
+})
+```
+
+#### `proxy.connect("serverName")`
+
+``` js
+var stream = proxy.connect(serverName)
+```
+
+You can manually connect directly to a stream server. This runs similar logic to `StreamClient(...).connect(serverName)`
 
 ## How it works
 
