@@ -20,6 +20,7 @@ function connect() {
     var stream = StreamServer(mdm).connect(SERVER_NAME)
     stream.on("data", function (data) {
         console.log("[CLIENT]", data)
+        stream.end()
     })
     stream.write("from client")
 }
