@@ -1,0 +1,186 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Browser-stream-server by Colingo</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Browser-stream-server</h1>
+        <p>Create a server in the browser</p>
+
+        <p class="view"><a href="https://github.com/Colingo/browser-stream-server">View the Project on GitHub <small>Colingo/browser-stream-server</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/Colingo/browser-stream-server/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/Colingo/browser-stream-server/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/Colingo/browser-stream-server">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>browser-stream-server</h1>
+
+<p>A stream server in the browser</p>
+
+<p>Create streaming servers in your browser. Emulating peer to peer connections through a central proxy server</p>
+
+<h2>Example browser server (In a seperate browser)</h2>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">StreamServer</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"browser-stream-server"</span><span class="p">)</span>
+    <span class="p">,</span> <span class="nx">boot</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"boot"</span><span class="p">)</span>
+    <span class="p">,</span> <span class="nx">mdm</span> <span class="o">=</span> <span class="nx">boot</span><span class="p">(</span><span class="s2">"/boot"</span><span class="p">)</span>
+
+<span class="c1">// Open a Stream server and listen on a server name</span>
+<span class="nx">StreamServer</span><span class="p">(</span><span class="nx">mdm</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">stream</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// Called every time a client opens up a stream connection to you</span>
+    <span class="nx">stream</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"data"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"[SERVER]"</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+    <span class="p">})</span>
+    <span class="nx">stream</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="s2">"from server"</span><span class="p">)</span>
+<span class="p">}).</span><span class="nx">listen</span><span class="p">(</span><span class="s2">"SERVER_NAME"</span><span class="p">)</span>
+</pre></div>
+
+<h2>Example browser client (In a seperate browser)</h2>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">StreamClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"browser-stream-server"</span><span class="p">)</span>
+    <span class="p">,</span> <span class="nx">boot</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"boot"</span><span class="p">)</span>
+    <span class="p">,</span> <span class="nx">mdm</span> <span class="o">=</span> <span class="nx">boot</span><span class="p">(</span><span class="s2">"/boot"</span><span class="p">)</span>
+
+<span class="c1">// Open a connection to a named stream server</span>
+<span class="kd">var</span> <span class="nx">stream</span> <span class="o">=</span> <span class="nx">StreamClient</span><span class="p">(</span><span class="nx">mdm</span><span class="p">).</span><span class="nx">connect</span><span class="p">(</span><span class="s2">"SERVER_NAME"</span><span class="p">)</span>
+<span class="nx">stream</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"data"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">"[CLIENT]"</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span>
+<span class="p">})</span>
+<span class="nx">stream</span><span class="p">.</span><span class="nx">write</span><span class="p">(</span><span class="s2">"from client"</span><span class="p">)</span>
+</pre></div>
+
+<h2>Example proxy server</h2>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">boot</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"boot"</span><span class="p">)</span>
+    <span class="p">,</span> <span class="nx">StreamServerProxy</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"browser-stream-server"</span><span class="p">)</span>
+    <span class="p">,</span> <span class="nx">StreamRouter</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"stream-router"</span><span class="p">)</span>
+
+<span class="c1">// route stream traffic from boot through a stream router</span>
+<span class="kd">var</span> <span class="nx">streamRouter</span> <span class="o">=</span> <span class="nx">StreamRouter</span><span class="p">()</span>
+    <span class="p">,</span> <span class="nx">sock</span> <span class="o">=</span> <span class="nx">boot</span><span class="p">(</span><span class="nx">streamRouter</span><span class="p">)</span>
+
+<span class="c1">// for every request to /browser-server let the StreamServer proxy handle it</span>
+<span class="nx">streamRouter</span><span class="p">.</span><span class="nx">addRoute</span><span class="p">(</span><span class="s2">"/browser-server/*"</span>
+    <span class="p">,</span> <span class="nx">StreamServerProxy</span><span class="p">(</span><span class="s2">"/browser-server"</span><span class="p">))</span>
+
+<span class="nx">sock</span><span class="p">.</span><span class="nx">install</span><span class="p">(</span><span class="nx">someHttpServer</span><span class="p">,</span> <span class="s2">"/boot"</span><span class="p">)</span>
+</pre></div>
+
+<h2>Motivation</h2>
+
+<p>This a pre-runner to real P2P experiments that will be done once we can create <a href="http://dev.w3.org/2011/webrtc/editor/webrtc.html#widl-RTCPeerConnection-createDataChannel-DataChannel-DOMString-label-DataChannelInit-dataChannelDict">data channels</a> with WebRTC</p>
+
+<p>This is the smallest piece necessary to spawn arbitary stream servers in browsers.</p>
+
+<h2>Documentation</h2>
+
+<h3><code>StreamClient(mdm, options).connect(serverName)</code></h3>
+
+<p>To be used in the browser</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">StreamClient</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"browser-stream-server"</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">stream</span> <span class="o">=</span> <span class="nx">StreamClient</span><span class="p">(</span><span class="nx">mdm</span><span class="p">).</span><span class="nx">connect</span><span class="p">(</span><span class="s2">"SERVER_NAME"</span><span class="p">)</span>
+</pre></div>
+
+<p>Returns a stream connection to that server name. It assumes the server is running somewhere else. If it's not then the stream is closed.</p>
+
+<p>The <code>mdm</code> value is a <a href="https://github.com/dominictarr/mux-demux#muxdemuxoptions">MuxDemux</a> stream. This can be got from mux-demux, mux-demux-shoe or boot.</p>
+
+<p>options include a prefix option which allows you to set a custom prefix if the StreamServerProxy uses a custom prefix.</p>
+
+<h3><code>StreamServer(mdm, options, callback).listen(serverName)</code></h3>
+
+<p>To be used in the browser</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">StreamServer</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"browser-stream-server"</span><span class="p">)</span>
+<span class="kd">var</span> <span class="nx">server</span> <span class="o">=</span> <span class="nx">StreamServer</span><span class="p">(</span><span class="nx">mdm</span><span class="p">,</span> <span class="nx">options</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">stream</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// handle stream</span>
+<span class="p">}).</span><span class="nx">listen</span><span class="p">(</span><span class="s2">"SERVER_NAME"</span><span class="p">)</span>
+</pre></div>
+
+<p>Creates a server stream connection. It assumes that named server is not already running somewhere else. If it is then the stream is closed.</p>
+
+<p>The <code>mdm</code> value is a <a href="https://github.com/dominictarr/mux-demux#muxdemuxoptions">MuxDemux</a> stream. This can be got from mux-demux, mux-demux-shoe or boot.</p>
+
+<p>options are optional, you can pass a callback as the second parameter. The callback get's called every time someone else calls <code>.connect(serverName)</code> and you get passed a stream connection to them</p>
+
+<p>options include a prefix option which allows you to set a custom prefix if the StreamServerProxy uses a custom prefix.</p>
+
+<p>To close the server just <code>.end()</code> the returned server</p>
+
+<h3><code>StreamServerProxy(prefix)</code></h3>
+
+<p>To be used in the server</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">StreamServerProxy</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"browser-stream-server"</span><span class="p">)</span>
+    <span class="p">,</span> <span class="nx">proxy</span> <span class="o">=</span> <span class="nx">StreamServerProxy</span><span class="p">(</span><span class="s2">"/somePrefix"</span><span class="p">)</span>
+<span class="c1">// for every request to /browser-server let the StreamServer proxy handle it</span>
+<span class="nx">streamRouter</span><span class="p">.</span><span class="nx">addRoute</span><span class="p">(</span><span class="s2">"/somePrefix/*"</span><span class="p">,</span> <span class="nx">proxy</span><span class="p">)</span>
+</pre></div>
+
+<p>Set up a steam route handler to allow the stream servers and clients to be proxied through your central server.</p>
+
+<p>Optionally pass in a prefix which defaults to <code>"/browser-server"</code>. If you pass in a different prefix make sure that your browser code matches the prefix.</p>
+
+<h4>proxy events</h4>
+
+<p>The returned proxy object emits <code>server-created</code> and <code>server-destroyed</code> events when a server stream connects and claims to own the SERVER_NAME</p>
+
+<div class="highlight"><pre><span class="nx">proxy</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"server-created"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">serverName</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">createSomeSpecialResources</span><span class="p">(</span><span class="nx">serverName</span><span class="p">)</span>
+<span class="p">})</span>
+
+<span class="nx">proxy</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">"server-destroyed"</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">serverName</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">destroySpecialResources</span><span class="p">(</span><span class="nx">serverName</span><span class="p">)</span>
+<span class="p">})</span>
+</pre></div>
+
+<h4><code>proxy.connect("serverName")</code></h4>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">stream</span> <span class="o">=</span> <span class="nx">proxy</span><span class="p">.</span><span class="nx">connect</span><span class="p">(</span><span class="nx">serverName</span><span class="p">)</span>
+</pre></div>
+
+<p>You can manually connect directly to a stream server. This runs similar logic to <code>StreamClient(...).connect(serverName)</code></p>
+
+<h2>How it works</h2>
+
+<p>When you call <code>StreamServer(...).listen(SERVER_NAME)</code> you open a server stream to the <code>StreamServerProxy</code> and tell the server "redirect all connect SERVER_NAME traffic to me"</p>
+
+<p>When you call <code>StreamClient(...).connect(SERVER_NAME)</code> you open a client stream to the <code>StreamServerProxy</code> saying "connect me to SERVER_NAME". The <code>StreamProxyServer</code> then sends a message to <code>StreamServer</code> identified by SERVER_NAME. The message contains a unique identifier, UNIQUE_ID for this client stream. The proxy server stores this client stream in memory.</p>
+
+<p>The <code>StreamServer</code> receives this message and opens another connection to the <code>StreamServerProxy</code> saying "hi I'm server SERVER_NAME and want to connect to client UNIQUE_ID". The <code>StreamServerProxy</code> then gets the client stream out of memory and connects it to the new server connection which allows the client to talk to the server</p>
+
+<h2>Installation</h2>
+
+<p><code>npm install browser-stream-server</code></p>
+
+<h2>Contributors</h2>
+
+<ul>
+<li>Raynos</li>
+</ul><h2>MIT Licenced</h2>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/Colingo">Colingo</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
