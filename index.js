@@ -1,6 +1,9 @@
 var StreamStore = require("stream-store")
     , hat = require("hat")
     , StreamRouter = require("stream-router")
+    , through = require("through")
+    , PauseStream = require("pause-stream")
+    , duplex = require("duplexer")
 
 var stores = {}
 
@@ -18,12 +21,6 @@ function createRouter(prefix) {
 function handleServer(stream, params) {
     var serverName = params.serverName
         , store = stores[serverName]
-
-    console.log("[HANDLE-SERVER]", {
-        serverName: serverName
-        , params: params
-        , store: Object.keys(stores)
-    })
 
     if (store) {
         // someone already registered this server. This is invalid state
@@ -68,10 +65,17 @@ function handleClient(stream, params) {
         , rack = server.rack
         , serverStream = server.stream
         , clientName = rack()
+        , bufferWritable = through()
+        , bufferReadable = PauseStream().pause()
+        , buffer = duplex(bufferWritable, bufferReadable)
 
-    store.set(clientName, stream)
+    store.set(clientName, buffer)
 
     serverStream.write(clientName)
+
+    // When a client requests a server connection buffer that stream
+    // until the server responds
+    bufferWritable.pipe(stream).pipe(bufferReadable)
 
     stream.once("end", onend)
 
@@ -101,4 +105,6 @@ function redirectServerToClient(stream, params) {
     var clientStream = store.get(clientName)
 
     stream.pipe(clientStream).pipe(stream)
+
+    clientStream.resume()
 }

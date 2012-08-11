@@ -1,4 +1,4 @@
-var CreateServer = require("../../../browser")
+var StreamServer = require("../../../browser")
     , boot = require("boot")
     , SERVER_NAME = "foobar"
 
@@ -8,7 +8,7 @@ window.listen = listen
 window.connect = connect
 
 function listen() {
-    CreateServer(mdm, function (stream) {
+    StreamServer(mdm, function (stream) {
         stream.on("data", function (data) {
             console.log("[SERVER]", data)
         })
@@ -17,7 +17,7 @@ function listen() {
 }
 
 function connect() {
-    var stream = CreateServer(mdm).connect(SERVER_NAME)
+    var stream = StreamServer(mdm).connect(SERVER_NAME)
     stream.on("data", function (data) {
         console.log("[CLIENT]", data)
     })
