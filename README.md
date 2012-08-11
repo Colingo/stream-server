@@ -54,6 +54,73 @@ streamRouter.addRoute("/browser-server/*"
 sock.install(someHttpServer, "/boot")
 ```
 
+## Motivation
+
+This a pre-runner to real P2P experiments that will be done once we can create [data channels][3] with WebRTC
+
+This is the smallest piece necessary to spawn arbitary stream servers in browsers.
+
+## Documentation
+
+### `StreamClient(mdm, options).connect(serverName)`
+
+To be used in the browser
+
+``` js
+var StreamClient = require("browser-stream-server")
+var stream = StreamClient(mdm).connect("SERVER_NAME")
+```
+
+Returns a stream connection to that server name. It assumes the server is running somewhere else. If it's not then the stream is closed.
+
+The `mdm` value is a [MuxDemux][4] stream. This can be got from mux-demux, mux-demux-shoe or boot.
+
+options include a prefix option which allows you to set a custom prefix if the StreamServerProxy uses a custom prefix.
+
+### `StreamServer(mdm, options, callback).listen(serverName)`
+
+To be used in the browser
+
+``` js
+var StreamServer = require("browser-stream-server")
+var server = StreamServer(mdm, options, function (stream) {
+    // handle stream
+}).listen("SERVER_NAME")
+```
+
+Creates a server stream connection. It assumes that named server is not already running somewhere else. If it is then the stream is closed.
+
+The `mdm` value is a [MuxDemux][4] stream. This can be got from mux-demux, mux-demux-shoe or boot.
+
+options are optional, you can pass a callback as the second parameter. The callback get's called every time someone else calls `.connect(serverName)` and you get passed a stream connection to them
+
+options include a prefix option which allows you to set a custom prefix if the StreamServerProxy uses a custom prefix.
+
+To close the server just `.end()` the returned server
+
+### `StreamServerProxy(prefix)`
+
+To be used in the server
+
+``` js
+var StreamServerProxy = require("browser-stream-server")
+// for every request to /browser-server let the StreamServer proxy handle it
+streamRouter.addRoute("/somePrefix/*"
+    , StreamServerProxy("/somePrefix"))
+```
+
+Set up a steam route handler to allow the stream servers and clients to be proxied through your central server.
+
+Optionally pass in a prefix which defaults to `"/browser-server"`. If you pass in a different prefix make sure that your browser code matches the prefix.
+
+## How it works
+
+When you call `StreamServer(...).listen(SERVER_NAME)` you open a server stream to the `StreamServerProxy` and tell the server "redirect all connect SERVER_NAME traffic to me"
+
+When you call `StreamClient(...).connect(SERVER_NAME)` you open a client stream to the `StreamServerProxy` saying "connect me to SERVER_NAME". The `StreamProxyServer` then sends a message to `StreamServer` identified by SERVER_NAME. The message contains a unique identifier, UNIQUE_ID for this client stream. The proxy server stores this client stream in memory.
+
+The `StreamServer` receives this message and opens another connection to the `StreamServerProxy` saying "hi I'm server SERVER_NAME and want to connect to client UNIQUE_ID". The `StreamServerProxy` then gets the client stream out of memory and connects it to the new server connection which allows the client to talk to the server
+
 ## Installation
 
 `npm install browser-stream-server`
@@ -66,3 +133,5 @@ sock.install(someHttpServer, "/boot")
 
   [1]: https://secure.travis-ci.org/Raynos/browser-stream-server.png
   [2]: http://travis-ci.org/Raynos/browser-stream-server
+  [3]: http://dev.w3.org/2011/webrtc/editor/webrtc.html#widl-RTCPeerConnection-createDataChannel-DataChannel-DOMString-label-DataChannelInit-dataChannelDict
+  [4]: https://github.com/dominictarr/mux-demux#muxdemuxoptions

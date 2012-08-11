@@ -10,6 +10,7 @@ var stores = {}
 module.exports = createRouter
 
 function createRouter(prefix) {
+    prefix = prefix || "/browser-server"
     var router = StreamRouter()
     router.addRoute(prefix + "/server/:serverName/client/:clientName"
         , redirectServerToClient)

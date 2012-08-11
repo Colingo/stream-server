@@ -27,6 +27,8 @@ function createServer(mdm, options, callback) {
 
         stream.on("data", openServerConnection)
 
+        return stream
+
         function openServerConnection(clientName) {
             // for each client message that comes up open the client stream
             // and return it into the callback
