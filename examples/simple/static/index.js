@@ -9,6 +9,7 @@ window.connect = connect
 
 function listen() {
     StreamServer(mdm, function (stream) {
+        console.log("writing to stream")
         stream.on("data", function (data) {
             console.log("[SERVER]", data)
         })
@@ -17,6 +18,7 @@ function listen() {
 }
 
 function connect() {
+    console.log("reading from stream")
     var stream = StreamServer(mdm).connect(SERVER_NAME)
     stream.on("data", function (data) {
         console.log("[CLIENT]", data)

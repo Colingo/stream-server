@@ -15,7 +15,7 @@ function StreamServerProxy(prefix) {
 
     extend(proxy, EventEmitter)
 
-    prefix = prefix || "/browser-server"
+    prefix = prefix || "/stream-server"
 
     proxy.addRoute(prefix + "/server/:serverName/client/:clientName"
         , partial(redirectServerToClient, stores))
@@ -24,6 +24,7 @@ function StreamServerProxy(prefix) {
     proxy.addRoute(prefix + "/client/:serverName/*"
         , partial(handleClient, stores))
 
+    // probably buggy
     proxy.connect = connect
 
     return proxy
