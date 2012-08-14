@@ -21,16 +21,16 @@ function createServer(mdm, options, callback) {
     }
 
     function connect(name) {
+        // Return a proxy stream
         var writable = PauseStream().pause()
-            , buffer = []
-            , readable = through()
+            // catch first message from server that stream is open
+            , readable = through(catchFirstMessage)
             , proxy = duplex(writable, readable)
             , tryAgain = 4
             , connected = false
 
+        // try to open the stream
         openStream()
-
-        readable.once("data", isOpen)
 
         return proxy
 
@@ -41,6 +41,7 @@ function createServer(mdm, options, callback) {
 
             writable.pipe(stream).pipe(readable)
 
+            // handle server does not exist yet and try to reconnect 4 times
             stream.once("error", handleError)
 
             function handleError(err) {
@@ -60,6 +61,16 @@ function createServer(mdm, options, callback) {
                 } else {
                     proxy.emit("error", err)
                 }
+            }
+        }
+
+        function catchFirstMessage(data) {
+            // the open message is from the proxy server
+            if (connected === false && data === "open") {
+                connected = true
+                writable.resume()
+            } else {
+                this.emit("data", data)
             }
         }
 
