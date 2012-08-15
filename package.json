@@ -1,6 +1,6 @@
 {
   "name": "stream-server",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "A stream server in the browser",
   "keywords": [],
   "author": "Raynos <raynos2@gmail.com>",
