@@ -40,12 +40,9 @@ function createServer(mdm, options, callback) {
                 , stream = mdm.createStream(prefix + "/client/" + name +
                     "/" + id)
 
-            console.log("opening", id)
-
             writable.pipe(stream).pipe(readable)
 
             stream.once("ended", function () {
-                console.log("client-stream did not end")
                 stream.end()
             })
 
@@ -58,7 +55,6 @@ function createServer(mdm, options, callback) {
 
                 if (code === "404" && message === "server does not exist") {
                     tryAgain--
-                    console.log('server does not exist', tryAgain)
                     if (tryAgain === 0) {
                         return proxy.emit("error", err)
                     }
@@ -92,8 +88,6 @@ function createServer(mdm, options, callback) {
         return stream
 
         function openServerConnection(clientName) {
-            console.log("request to open", clientName)
-
             // for each client message that comes up create a proxy stream
             // and return it
             var writable = PauseStream().pause()
@@ -112,12 +106,9 @@ function createServer(mdm, options, callback) {
                     , stream = mdm.createStream(prefix + "/server/" + name +
                     "/client/" + clientName + "/" + id)
 
-                console.log("opening", id)
-
                 // Boot server says the relay server disconnected.
                 // Clean up open streams
                 stream.once("ended", function () {
-                    console.log("ending server", id)
                     stream.purge && stream.purge()
                     stream.end()
                 })
@@ -135,7 +126,6 @@ function createServer(mdm, options, callback) {
                         "server connection"
                     ) {
                         tryAgain--
-                        console.log('client does not exist', tryAgain, id)
                         if (tryAgain === 0) {
                             return proxy.emit("error", err)
                         }
