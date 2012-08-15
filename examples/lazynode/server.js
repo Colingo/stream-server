@@ -1,15 +1,34 @@
 var browserifyServer = require("browserify-server")
-    , http = require("http")
-    , path = require("path")
     , boot = require("boot")
-    , StreamServer = require("../..")
-    , StreamRouter = require("stream-router")
+    , StreamServerProxy = require("../..")
 
-var handler = browserifyServer(path.join(__dirname, "static"))
-    , server = http.createServer(handler).listen(8080)
-    , streamRouter = StreamRouter()
-    , sock = boot(streamRouter)
+var server = browserifyServer.listen(__dirname, 8080)
+    , proxy = StreamServerProxy()
 
-streamRouter.addRoute("/browser-server/*", StreamServer("/browser-server"))
+boot.install(server, logger(proxy))
 
-sock.install(server, "/boot")
+function logger(f) {
+    return function (stream) {
+        console.log("[BOOT-STREAM-RECEIVED]", {
+            meta: stream.meta
+            , id: stream.id
+        })
+        stream.on("data", function (data) {
+            console.log("[BOOT-STREAM-DATA]", {
+                meta: stream.meta
+                , data: data
+                , id: stream.id
+            })
+        })
+        var _write = stream.write
+        stream.write = function (data) {
+            console.log("[BOOT-STREAM-WRITE]", {
+                meta: stream.meta
+                , data: data
+                , id: stream.id
+            })
+            _write.apply(this, arguments)
+        }
+        f.apply(this, arguments)
+    }
+}

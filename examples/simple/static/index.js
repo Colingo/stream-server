@@ -14,6 +14,9 @@ function listen() {
             console.log("[SERVER]", data)
         })
         stream.write("from server")
+        stream.on("end", function () {
+            console.log("[SERVER] end")
+        })
     }).listen(SERVER_NAME)
 }
 

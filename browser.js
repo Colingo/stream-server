@@ -22,9 +22,9 @@ function createServer(mdm, options, callback) {
 
     function connect(name) {
         // Return a proxy stream
-        var writable = PauseStream().pause()
+        var readable = through(catchFirstMessage)
             // catch first message from server that stream is open
-            , readable = through(catchFirstMessage)
+            , writable = PauseStream().pause()
             , proxy = duplex(writable, readable)
             , tryAgain = 4
             , connected = false
@@ -35,22 +35,30 @@ function createServer(mdm, options, callback) {
         return proxy
 
         function openStream() {
-            // connect to a client directly
-            var stream = mdm.createStream(prefix + "/client/" + name +
-                "/" + rack())
+            // connect to a server directly
+            var id = rack()
+                , stream = mdm.createStream(prefix + "/client/" + name +
+                    "/" + id)
+
+            console.log("opening", id)
 
             writable.pipe(stream).pipe(readable)
+
+            stream.once("ended", function () {
+                console.log("client-stream did not end")
+                stream.end()
+            })
 
             // handle server does not exist yet and try to reconnect 4 times
             stream.once("error", handleError)
 
             function handleError(err) {
-                var parts = err.message.split(":")
-                    , code = parts[0]
-                    , message = parts[1]
+                var code = err.code
+                    , message = err.message
 
-                if (code === "404" && message === " server does not exist") {
+                if (code === "404" && message === "server does not exist") {
                     tryAgain--
+                    console.log('server does not exist', tryAgain)
                     if (tryAgain === 0) {
                         return proxy.emit("error", err)
                     }
@@ -66,16 +74,12 @@ function createServer(mdm, options, callback) {
 
         function catchFirstMessage(data) {
             // the open message is from the proxy server
-            if (connected === false && data === "open") {
+            if (connected === false && data === "[stream-server]:open") {
                 connected = true
                 writable.resume()
             } else {
                 this.emit("data", data)
             }
-        }
-
-        function isOpen() {
-            writable.resume()
         }
     }
     
@@ -88,12 +92,72 @@ function createServer(mdm, options, callback) {
         return stream
 
         function openServerConnection(clientName) {
-            // for each client message that comes up open the client stream
-            // and return it into the callback
-            var clientStream = mdm.createStream(prefix + "/server/" + name +
-                "/client/" + clientName)
+            console.log("request to open", clientName)
 
-            callback(clientStream)
+            // for each client message that comes up create a proxy stream
+            // and return it
+            var writable = PauseStream().pause()
+                , readable = through(catchFirstMessage)
+                , proxy = duplex(writable, readable)
+                , tryAgain = 4
+                , connected = false
+
+            openStream()
+
+            callback(proxy)
+
+            function openStream() {
+                // connect to client directly (through relay)
+                var id = rack()
+                    , stream = mdm.createStream(prefix + "/server/" + name +
+                    "/client/" + clientName + "/" + id)
+
+                console.log("opening", id)
+
+                // Boot server says the relay server disconnected.
+                // Clean up open streams
+                stream.once("ended", function () {
+                    console.log("ending server", id)
+                    stream.purge && stream.purge()
+                    stream.end()
+                })
+
+                writable.pipe(stream).pipe(readable)
+
+                // handle client does not exist yet and try to reconnect
+                stream.once("error", handleError)
+
+                function handleError(err) {
+                    var code = err.code
+                        , message = err.message
+
+                    if (code === "500" && message === "cannot open client-" +
+                        "server connection"
+                    ) {
+                        tryAgain--
+                        console.log('client does not exist', tryAgain, id)
+                        if (tryAgain === 0) {
+                            return proxy.emit("error", err)
+                        }
+
+                        stream.end()
+                        stream.destroy()
+                        setTimeout(openStream, 500)
+                    } else {
+                        proxy.emit("error", err)
+                    }
+                }
+            }
+
+            function catchFirstMessage(data) {
+                // the open message is from the proxy server
+                if (connected === false && data === "[stream-server]:open") {
+                    connected = true
+                    writable.resume()
+                } else {
+                    this.emit("data", data)
+                }
+            }
         }
     }
 }

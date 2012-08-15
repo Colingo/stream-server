@@ -1,12 +1,12 @@
 {
-  "name": "browser-stream-server",
+  "name": "stream-server",
   "version": "0.4.0",
   "description": "A stream server in the browser",
   "keywords": [],
   "author": "Raynos <raynos2@gmail.com>",
-  "repository": "git://github.com/Colingo/browser-stream-server.git",
+  "repository": "git://github.com/Colingo/stream-server.git",
   "main": "index",
-  "homepage": "https://github.com/Colingo/browser-stream-server",
+  "homepage": "https://github.com/Colingo/stream-server",
   "browserify": "browser.js",
   "contributors": [
     {
@@ -14,7 +14,7 @@
     }
   ],
   "bugs": {
-    "url": "https://github.com/Colingo/browser-stream-server/issues",
+    "url": "https://github.com/Colingo/stream-server/issues",
     "email": "raynos2@gmail.com"
   },
   "dependencies": {
@@ -28,14 +28,14 @@
     "xtend": "~1.0.3"
   },
   "devDependencies": {
-    "boot": "~0.8.0",
+    "boot": "~0.8.1",
     "browserify-server": "~0.2.1",
     "lazynode": "~0.1.0"
   },
   "licenses": [
     {
       "type": "MIT",
-      "url": "http://github.com/Colingo/browser-stream-server/raw/master/LICENSE"
+      "url": "http://github.com/Colingo/stream-server/raw/master/LICENSE"
     }
   ],
   "scripts": {}

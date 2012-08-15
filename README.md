@@ -1,4 +1,4 @@
-# browser-stream-server
+# stream-server
 
 A stream server in the browser
 
@@ -118,11 +118,11 @@ Optionally pass in a prefix which defaults to `"/browser-server"`. If you pass i
 The returned proxy object emits `server-created` and `server-destroyed` events when a server stream connects and claims to own the SERVER_NAME
 
 ``` js
-proxy.on("server-created", function (serverName) {
+proxy.on("server.created", function (serverName) {
     createSomeSpecialResources(serverName)
 })
 
-proxy.on("server-destroyed", function (serverName) {
+proxy.on("server.destroyed", function (serverName) {
     destroySpecialResources(serverName)
 })
 ```

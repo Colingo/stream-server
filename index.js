@@ -17,7 +17,7 @@ function StreamServerProxy(prefix) {
 
     prefix = prefix || "/stream-server"
 
-    proxy.addRoute(prefix + "/server/:serverName/client/:clientName"
+    proxy.addRoute(prefix + "/server/:serverName/client/:clientName/*"
         , partial(redirectServerToClient, stores))
     proxy.addRoute(prefix + "/server/:serverName"
         , partial(handleServer, stores, proxy))
